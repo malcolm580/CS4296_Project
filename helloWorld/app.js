@@ -5,13 +5,13 @@ var uuid = require('uuid');
 
 var AWS = require('aws-sdk');
 AWS.config.update({
-    region: 'us-east-1'
+    region: 'ap-southeast-1'
 });
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 var dynamodb = new AWS.DynamoDB();
 
-var tableName = 'dynamo-with-nodejs-example';
+var tableName = 'SalonbookDB';
 var PORT = 3000;
 
 // Permit the app to parse application/x-www-form-urlencoded
@@ -43,76 +43,6 @@ app.post('/createItem', function (req, res) {
     
 });
 
-app.post('/readItem', function (req, res) {
-    if (req.body) {
-        var params = {
-            TableName: tableName,
-            Key: {
-                id: req.body.id,
-                category: req.body.category
-            }
-        }
-        docClient.get(params, function (err, data) {
-            if (err) {
-                res.send(err);
-            } else {
-                res.send(data);
-            }
-        });
-    } else {
-        res.send('no request data');
-    }
-});
-
-app.post('/updateItem', function (req, res) {
-    if (req.body) {
-        var params = {
-            TableName: tableName,
-            Key: {
-                id: req.body.id,
-                category: req.body.category
-            },
-            UpdateExpression: 'set #m=:n',
-            ExpressionAttributeNames: {
-                '#m': 'name'
-            },
-            ExpressionAttributeValues: {
-                ':n': req.body.name
-            },
-            ReturnValues: 'UPDATED_NEW'
-        };
-        docClient.update(params, function (err, data) {
-            if (err) {
-                res.send(err);
-            } else {
-                res.send(data);
-            }
-        });
-    } else {
-        res.send('no request data');
-    }
-});
-
-app.post('/deleteItem', function (req, res) {
-    if (req.body) {
-        var params = {
-            TableName: tableName,
-            Key: {
-                id: req.body.id,
-                category: req.body.category
-            }
-        }
-        docClient.delete(params, function (err, data) {
-            if (err) {
-                res.send(err);
-            } else {
-                res.send(data);
-            }
-        });
-    } else {
-        res.send('no request data');
-    }
-});
 
 app.listen(PORT, function () {
     console.log('server is running on localhost:' + PORT);

@@ -1,49 +1,32 @@
-var express = require('express');
-var app = express();
-var bodyParser = require('body-parser');
-var uuid = require('uuid');
+var AWS = require("aws-sdk");
 
-var AWS = require('aws-sdk');
 AWS.config.update({
-    region: 'ap-southeast-1'
+  region: "us-west-2",
+  endpoint: "http://localhost:8000"
 });
 
-var docClient = new AWS.DynamoDB.DocumentClient();
 var dynamodb = new AWS.DynamoDB();
 
-var tableName = 'SalonbookDB';
-var PORT = 3000;
-
-// Permit the app to parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({extended: true}));
-// Use body-parser as middleware for the app.
-app.use(bodyParser.json());
-
-app.post('/createItem', function (req, res) {
-    if (req.body) {
-        var params = {
-            TableName: tableName,
-            Item: {
-                id: uuid.v1(),
-                category: req.body.category,
-                name: req.body.name,
-                createDate: (new Date()).toLocaleString()
-            }
-        }
-        docClient.put(params, function (err, data) {
-            if (err) {
-                res.send(err);
-            } else {
-                res.send('create item success.');
-            }
-        });
-    } else {
-        res.send('no request data');
+var params = {
+    TableName : "Movies",
+    KeySchema: [       
+        { AttributeName: "year", KeyType: "HASH"},  //Partition key
+        { AttributeName: "title", KeyType: "RANGE" }  //Sort key
+    ],
+    AttributeDefinitions: [       
+        { AttributeName: "year", AttributeType: "N" },
+        { AttributeName: "title", AttributeType: "S" }
+    ],
+    ProvisionedThroughput: {       
+        ReadCapacityUnits: 10, 
+        WriteCapacityUnits: 10
     }
-    
-});
+};
 
-
-app.listen(PORT, function () {
-    console.log('server is running on localhost:' + PORT);
+dynamodb.createTable(params, function(err, data) {
+    if (err) {
+        console.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2));
+    } else {
+        console.log("Created table. Table description JSON:", JSON.stringify(data, null, 2));
+    }
 });
